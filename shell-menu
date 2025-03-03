@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Copyright (c) 2025
+# Author: Evgenii Buchnev
+# GitHub: https://github.com/evgeniibuchnev
+# Description: Read help for description
+
+SELF=shell-menu
+DELIMITER=") "
+# or DELIMITER=" - "
+
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+show_help() {
+    echo "
+    ${SELF} - a simple shell script to show a menu and select one option to pass it further down the pipe.
+    Expects newline-separated input from standard input (stdin) or as command-line arguments.
+
+    Usage 1: echo \"Apple\nBanana\nOrange\" | ${SELF} | tail -n 1
+    Usage 2: cat items_list.txt | ${SELF} | tail -n 1
+    Usage 3: ${SELF} \"Apple
+    Banana
+    Orange\"
+
+    Use '0' or 'q' to exit menu without selecting an option.
+
+    -h, --help    Show this help message and exit"
+}
+
+show_menu() {
+    read -p "Select an option. Use '0' or 'q' to exit: ${LINES}" SELECTED </dev/tty
+    if [ "${SELECTED}" == "q" ] || [ "${SELECTED}" == "Q" ]; then
+    SELECTED=0
+    fi
+}
+
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    >&2 show_help
+    exit 1
+fi
+
+if [ -p /dev/stdin ]; then
+    INPUT=$(cat)
+else
+    INPUT="$@"
+fi
+
+if [ -z "${INPUT}" ]; then
+    echo "No input provided"
+    >&2 show_help
+    exit 1
+fi
+
+COUNTER=0
+LINES="
+"
+
+while read -r line; do
+    COUNTER=$((COUNTER+1))
+    LINES="${LINES}${COUNTER}${DELIMITER}${line}
+"
+done <<< "${INPUT}"
+
+{
+
+# If only one option - we don't need to show the menu
+if [ "${COUNTER}" -eq 1 ]; then
+    echo "${INPUT}"
+    exit 0
+fi
+
+show_menu
+
+while ! [[ "${SELECTED}" =~ ^[0-9]+$ ]] || [ "${SELECTED}" -gt "${COUNTER}" ]; do
+    >&2 echo -e "${RED}Invalid input: ${SELECTED}, please select a number from 1 to ${COUNTER}${NC}"
+    show_menu
+done
+
+if [ "${SELECTED}" -eq 0 ]; then
+    >&2 echo "Exiting..."
+    exit 1
+fi
+
+echo "${INPUT}" | sed "${SELECTED}q;d"
+
+} | tail -n 1
+exit 0
