@@ -1,0 +1,7 @@
+
+Host webserver
+  User admin
+  IdentityFile ~/.ssh/your-key
+  PreferredAuthentications publickey
+  ServerAliveInterval 50
+  ProxyCommand bash -c "nc $( ~/.ssh/example-inventory.sh | ~/.ssh/shell-menu ) %p"
