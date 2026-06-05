@@ -2,7 +2,7 @@
 # Copyright (c) 2025
 # Author: Evgenii Buchnev
 # GitHub: https://github.com/evgeniibuchnev
-# Description: Read help for description
+# Description: Interactive menu for selecting one item from a list, passing the result to stdout
 
 SELF=shell-menu
 DELIMITER=") "
@@ -13,30 +13,29 @@ NC='\033[0m' # No Color
 
 show_help() {
     echo "
-    ${SELF} - a simple shell script to show a menu and select one option to pass it further down the pipe.
-    Expects newline-separated input from standard input (stdin) or as command-line arguments.
+    ${SELF} - a simple shell script that displays a numbered menu and passes the selected option to stdout.
+    Accepts newline-separated input from stdin or as command-line arguments.
+    Useful for interactive selection in scripts and pipelines, such as choosing a host from an inventory list or an API-returned list.
 
-    Usage 1: echo \"Apple\nBanana\nOrange\" | ${SELF} | tail -n 1
-    Usage 2: cat items_list.txt | ${SELF} | tail -n 1
-    Usage 3: ${SELF} \"Apple
-    Banana
-    Orange\"
+    Usage 1: printf 'Apple\nBanana\nOrange\n' | ${SELF}
+    Usage 2: cat items_list.txt | ${SELF}
+    Usage 3: ${SELF} $'Apple\nBanana\nOrange'
 
-    Use '0' or 'q' to exit menu without selecting an option.
+    Enter '0' or 'q' to exit without selecting an option.
 
     -h, --help    Show this help message and exit"
 }
 
 show_menu() {
-    read -p "Select an option. Use '0' or 'q' to exit: ${LINES}" SELECTED </dev/tty
+    read -p "Select an option. Use '0' or 'q' to exit: ${MENU_ITEMS}" SELECTED </dev/tty
     if [ "${SELECTED}" == "q" ] || [ "${SELECTED}" == "Q" ]; then
-    SELECTED=0
+        SELECTED=0
     fi
 }
 
 if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     >&2 show_help
-    exit 1
+    exit 0
 fi
 
 if [ -p /dev/stdin ]; then
@@ -46,24 +45,22 @@ else
 fi
 
 if [ -z "${INPUT}" ]; then
-    echo "No input provided"
+    >&2 echo "No input provided"
     >&2 show_help
     exit 1
 fi
 
 COUNTER=0
-LINES="
+MENU_ITEMS="
 "
 
 while read -r line; do
     COUNTER=$((COUNTER+1))
-    LINES="${LINES}${COUNTER}${DELIMITER}${line}
+    MENU_ITEMS="${MENU_ITEMS}${COUNTER}${DELIMITER}${line}
 "
 done <<< "${INPUT}"
 
-{
-
-# If only one option - we don't need to show the menu
+# If only one option - no menu needed
 if [ "${COUNTER}" -eq 1 ]; then
     echo "${INPUT}"
     exit 0
@@ -72,7 +69,7 @@ fi
 show_menu
 
 while ! [[ "${SELECTED}" =~ ^[0-9]+$ ]] || [ "${SELECTED}" -gt "${COUNTER}" ]; do
-    >&2 echo -e "${RED}Invalid input: ${SELECTED}, please select a number from 1 to ${COUNTER}${NC}"
+    >&2 echo -e "${RED}Invalid input: ${SELECTED}. Please enter a number from 1 to ${COUNTER}.${NC}"
     show_menu
 done
 
@@ -82,6 +79,3 @@ if [ "${SELECTED}" -eq 0 ]; then
 fi
 
 echo "${INPUT}" | sed "${SELECTED}q;d"
-
-} | tail -n 1
-exit 0
