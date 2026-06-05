@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Download script from GitHub
 GITHUB_URL="https://raw.githubusercontent.com/evgeniibuchnev/shell-menu/master/shell-menu"
 # Default installation destination
@@ -17,7 +17,7 @@ if command -v curl >/dev/null 2>&1; then
 elif command -v wget >/dev/null 2>&1; then
     DOWNLOADER="wget"
 else
-    echo "Error: neither curl nor wget is installed"
+    >&2 echo "Error: neither curl nor wget is installed"
     exit 1
 fi
 
@@ -44,7 +44,7 @@ else
 fi
 
 if [ $? -ne 0 ] || [ ! -s "$TMP_FILE" ]; then
-    echo "Error: failed to download script from $GITHUB_URL"
+    >&2 echo "Error: failed to download script from $GITHUB_URL"
     rm -f "$TMP_FILE"
     exit 1
 fi
@@ -62,8 +62,8 @@ if [ -x "$INSTALL_DIR/$SCRIPT_NAME" ]; then
     echo ""
     echo "Installation successful!"
     echo "Script installed at: $INSTALL_DIR/$SCRIPT_NAME"
-    "$INSTALL_DIR/$SCRIPT_NAME" --version 2>/dev/null || echo "Run '$SCRIPT_NAME' to start"
+    echo "Run '$SCRIPT_NAME' to start"
 else
-    echo "Installation failed"
+    >&2 echo "Error: installation failed"
     exit 1
 fi
