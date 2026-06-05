@@ -55,7 +55,7 @@ rm -f "$TMP_FILE"
 
 # Make executable
 echo "Making script executable..."
-$SUDO chmod +x "$INSTALL_DIR/$SCRIPT_NAME"
+$SUDO chmod 755 "$INSTALL_DIR/$SCRIPT_NAME"
 
 # Verify installation
 if [ -x "$INSTALL_DIR/$SCRIPT_NAME" ]; then
