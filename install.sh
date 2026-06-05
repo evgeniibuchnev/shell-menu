@@ -2,7 +2,7 @@
 # Download script from GitHub
 GITHUB_URL="https://raw.githubusercontent.com/evgeniibuchnev/shell-menu/master/shell-menu"
 # Default installation destination
-INSTALL_DIR="${1:-/usr/local/sbin}"
+INSTALL_DIR="${1:-/usr/local/bin}"
 SCRIPT_NAME="shell-menu"
 
 

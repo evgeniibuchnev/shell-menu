@@ -55,7 +55,7 @@ Now running `ssh webserver` will display a menu to choose which host to connect 
 
 ## Installation
 
-To install or update `shell-menu` system-wide (default: `/usr/local/sbin`), use one of the following one-liners:
+To install or update `shell-menu` system-wide (default: `/usr/local/bin`), use one of the following one-liners:
 
 ```sh
 curl -s https://raw.githubusercontent.com/evgeniibuchnev/shell-menu/master/install.sh | bash
